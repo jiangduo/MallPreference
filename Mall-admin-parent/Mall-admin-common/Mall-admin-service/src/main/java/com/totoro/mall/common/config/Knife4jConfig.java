@@ -7,7 +7,8 @@ import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-@Configuration//配置类
+@Configuration//配置类,,注意这个类并没有被springboot扫描到（默认启动类所在包及其子包，但是这里配置类的包不同，造成这里没有生效
+// ）
 public class Knife4jConfig {
     @Bean
     public GroupedOpenApi adminApi() {
