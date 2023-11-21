@@ -15,3 +15,9 @@ spring:
 mybatis:
   mapper-locations: classpath:/mapper/*/*.xml #映射文件路径,这里表明，有个文件夹下面的文件。xml
   config-location: classpath:/mybatis-config.xml
+# 自定义配置，不拦截的请求路径，这里需要对应的类去读取这个配置
+mall:
+  auth:
+    noAuthUrls:
+      - /admin/system/index/login
+      - /admin/system/index/generateValidateCode
