@@ -35,8 +35,7 @@ import router from '@/router'
 import { useApp } from '@/pinia/modules/app'
 
 const service = axios.create({
-  //修改调用后端接口ip和端口号
-  baseURL: 'http:/localhost:8501', //https是加密传输需要安装证书，
+  baseURL: 'http://localhost:8501',
   timeout: 10000,
   withCredentials: true,
 })
@@ -46,10 +45,8 @@ service.interceptors.request.use(
   config => {
     const { authorization } = useApp()
     if (authorization) {
-      // 添加一个请求头Authorization ， 该请求头所对应的值为：Bearer token数据
       //config.headers.Authorization = `Bearer ${authorization.token}`
-
-      // 上传传递方式后端解析太麻烦，因此可以更改传递token方式为如下方式
+      //把token放到请求头里面
       config.headers.token = `${authorization.token}`
     }
     return config
@@ -64,7 +61,13 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   // 响应成功进入第1个函数，该函数的参数是响应对象
   response => {
-    return response.data
+    const res = response.data
+    if (res.code == 208) {
+        const redirect = encodeURIComponent(window.location.href)  // 当前地址栏的url
+        router.push(`/login?redirect=${redirect}`)
+        return Promise.reject(new Error(res.message || 'Error'))
+    }
+    return res 
   },
   // 响应失败进入第2个函数，该函数的参数是错误对象
   async error => {

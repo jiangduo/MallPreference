@@ -22,17 +22,17 @@
           :placeholder="$t('login.password')"
         />
       </el-form-item>
-      <!-- 验证码 -->
+
       <el-form-item prop="captcha">
-        <div class="captcha">
-          <el-input
-            class="text"
-            v-model="model.captcha"
-            prefix-icon="Picture"
-            placeholder="请输入验证码"
-          ></el-input>
-          <img :src="captchaSrc" @click="refreshCaptcha" />
-        </div>
+          <div class="captcha">
+              <el-input
+                        class="text"
+                        v-model="model.captcha"
+                        prefix-icon="Picture"
+                        placeholder="请输入验证码"
+                        ></el-input>
+              <img :src="captchaSrc" @click="refreshCaptcha" />
+          </div>
       </el-form-item>
 
       <el-form-item>
@@ -47,9 +47,9 @@
         </el-button>
       </el-form-item>
     </el-form>
-    <div class="change-lang">
-      <change-lang />
-    </div>
+  </div>
+  <div class="change-lang">
+    <change-lang />
   </div>
 </template>
 
@@ -64,7 +64,7 @@ import {
   onMounted,
   watch,
 } from 'vue'
-import { Login, GetValidateCode } from '@/api/login'
+import { Login , GetValidateCode } from '@/api/login'
 import { useRouter, useRoute } from 'vue-router'
 import ChangeLang from '@/layout/components/Topbar/ChangeLang.vue'
 import useLang from '@/i18n/useLang'
@@ -104,11 +104,12 @@ export default defineComponent({
       ],
       captcha: [
         {
-          required: true,
-          message: ctx.$t('login.rules-validate-code'),
-          trigger: 'blur',
+            required: true,
+            message: ctx.$t('login.rules-validate-code'),
+            trigger: 'blur',
         },
       ],
+
     })
 
     // onMounted钩子函数
@@ -120,16 +121,16 @@ export default defineComponent({
       model: {
         userName: 'admin',
         password: '111111',
-        captcha: '', // 用户输入的验证码
-        codeKey: '', // 后端返回的验证码key
+        captcha: '',      // 用户输入的验证码
+        codeKey: ''       // 后端返回的验证码key
       },
       rules: getRules(),
       loading: false,
-      captchaSrc: '',
+      captchaSrc: "" ,
       refreshCaptcha: async () => {
-        const { data } = await GetValidateCode()
-        state.model.codeKey = data.codeKey
-        state.captchaSrc = data.codeValue
+          const { data } = await GetValidateCode() ;
+          state.model.codeKey = data.codeKey
+          state.captchaSrc = data.codeValue
       },
       btnText: computed(() =>
         state.loading ? ctx.$t('login.logining') : ctx.$t('login.login')
@@ -157,7 +158,7 @@ export default defineComponent({
                 // 如果是内部路由地址
                 router.push(targetPath)
               } else {
-                router.push('/') // 请求成功以后，进入到首页
+                router.push('/')    // 请求成功以后，进入到首页
               }
               useApp().initToken(data)
             } else {

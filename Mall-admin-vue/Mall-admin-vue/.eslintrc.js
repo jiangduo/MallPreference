@@ -72,6 +72,5 @@ module.exports = {
     'vue/no-unused-components': 'warn',
     'vue/no-setup-props-destructure': 'off',
     'vue/script-setup-uses-vars': 'off',
-    'vue/no-v-model-argument': 'off',
   },
 }
