@@ -5,19 +5,19 @@
     </div>
 
     <el-dialog v-model="dialogImportVisible" title="导入" width="30%">
-      <el-form label-width="120px">
-          <el-form-item label="分类文件">
-              <el-upload
-                        class="upload-demo"
-                        action="http://localhost:8501/admin/product/category/importData"
-                        :on-success="onUploadSuccess"
-                        :headers="headers"
-                        >
-                  <el-button type="primary">上传</el-button>
-              </el-upload>
-          </el-form-item>
-      </el-form>
-  </el-dialog>
+    <el-form label-width="120px">
+        <el-form-item label="分类文件">
+            <el-upload
+                      class="upload-demo"
+                      action="http://localhost:8501/admin/product/category/importData"
+                      :on-success="onUploadSuccess"
+                      :headers="headers"
+                      >
+                <el-button type="primary">上传</el-button>
+            </el-upload>
+        </el-form-item>
+    </el-form>
+    </el-dialog>
 
     <!---懒加载的树形表格-->
     <el-table
@@ -42,14 +42,14 @@
   
   </template>
 
+  
+
 <script setup>
 import { ref , onMounted} from 'vue';
-import { FindCategoryByParentId,ExportCategoryData } from '@/api/category.js'
-import { ElMessage, ElMessageBox } from 'element-plus'
-
-////////////////////////导入
 import { useApp } from '@/pinia/modules/app'
-    
+import { FindCategoryByParentId , ExportCategoryData} from '@/api/category.js'
+import { ElMessage, ElMessageBox } from 'element-plus'
+//////////////////////////////////导入
 // 文件上传相关变量以及方法定义
 const dialogImportVisible = ref(false)
 const headers = {
@@ -67,7 +67,25 @@ const onUploadSuccess = async (response, file) => {
   list.value = data ; 
 }
 
-///////////////////////////////////
+
+/////////////////////////////////导出
+const exportData = () => {
+  // 调用 ExportCategoryData() 方法获取导出数据
+  ExportCategoryData().then(res => {
+      // 创建 Blob 对象，用于包含二进制数据
+      const blob = new Blob([res]);             
+      // 创建 a 标签元素，并将 Blob 对象转换成 URL
+      const link = document.createElement('a'); 
+      link.href = window.URL.createObjectURL(blob);
+      // 设置下载文件的名称
+      link.download = '分类数据.xlsx';
+      // 模拟点击下载链接
+      link.click();
+  })  
+}
+
+
+
 // 定义list属性模型
 const list = ref([])
 
@@ -88,20 +106,6 @@ const fetchData = async (row, treeNode, resolve) => {
 
 }
 
-const exportData = () => {
-  // 调用 ExportCategoryData() 方法获取导出数据
-  ExportCategoryData().then(res => {
-      // 创建 Blob 对象，用于包含二进制数据
-      const blob = new Blob([res]);             
-      // 创建 a 标签元素，并将 Blob 对象转换成 URL
-      const link = document.createElement('a'); 
-      link.href = window.URL.createObjectURL(blob);
-      // 设置下载文件的名称
-      link.download = '分类数据.xlsx';
-      // 模拟点击下载链接
-      link.click();
-  })  
-}
 </script>
 
 <style scoped>

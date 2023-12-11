@@ -44,7 +44,7 @@
  * @Donate: https://huzhushan.gitee.io/vue3-element-admin/donate/
  -->
 
-<template>
+ <template>
   <el-dropdown trigger="hover">
     <div class="userinfo">
       <template v-if="!userinfo">

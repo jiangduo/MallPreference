@@ -78,8 +78,6 @@ export const useMenus = defineStore('menu', () => {
   const generateMenus = async () => {
     // // 方式一：只有固定菜单
     // const menus = getFilterMenus(fixedRoutes)
-    // commit('SET_MENUS', menus)
-    // const menus = getFilterMenus(fixedRoutes)
     // setMenus(menus)
 
     // 方式二：有动态菜单

@@ -1,5 +1,4 @@
 <template>
-
     <!---搜索表单-->
     <div class="search-div">
         <el-form label-width="70px" size="small">
@@ -8,7 +7,7 @@
                     <el-form-item label="关键字">
                         <el-input v-model="queryDto.keyword"
                                 style="width: 100%"
-                                placeholder="用户名"
+                                placeholder="用户名、姓名、手机号码"
                                 ></el-input>
                     </el-form-item>
                 </el-col>
@@ -32,7 +31,7 @@
                 <el-button size="small" @click="resetData">重置</el-button>
             </el-row>
         </el-form>
-    </div>
+    </div>  
 
     <!--添加按钮-->
     <div class="tools-div">
@@ -55,12 +54,12 @@
             </el-form-item>
             <el-form-item label="头像">
                 <el-upload
-                            class="avatar-uploader"
-                            action="http://localhost:8501/admin/system/fileUpload"
-                            :show-file-list="false"
-                            :on-success="handleAvatarSuccess"
-                            :headers="headers"
-                    >
+                        class="avatar-uploader"
+                        action="http://localhost:8501/admin/system/fileUpload"
+                        :show-file-list="false"
+                        :on-success="handleAvatarSuccess"
+                        :headers="headers"
+                >
                     <img v-if="sysUser.avatar" :src="sysUser.avatar" class="avatar" />
                     <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
                 </el-upload>
@@ -101,6 +100,7 @@
         </el-table-column>
     </el-table>
 
+    
     <el-dialog v-model="dialogRoleVisible" title="分配角色" width="40%">
         <el-form label-width="80px">
             <el-form-item label="用户名">
@@ -116,64 +116,63 @@
             </el-form-item>
 
             <el-form-item>
+                <!-- //分配角色表单提交按钮添加doAssign事件处理函数 -->
                 <el-button type="primary" @click="doAssign">提交</el-button>
                 <el-button @click="dialogRoleVisible = false">取消</el-button>
             </el-form-item>
         </el-form>
     </el-dialog>
+
     <el-pagination
                 v-model:current-page="pageParams.page"
                 v-model:page-size="pageParams.limit"
                 :page-sizes="[10, 20, 50, 100]"
-                @size-change="fetchData"
-                @current-change="fetchData"
                 layout="total, sizes, prev, pager, next"
                 :total="total"
                 />
+
 </template>
 
 <script setup>
-import { ref,onMounted } from 'vue'; 
-import {DoAssignRoleToUser,GetSysUserListByPage,SaveSysUser,UpdateSysUser,DeleteSysUser} from '@/api/sysUser'
+import { ref , onMounted } from 'vue'; 
+import { GetSysUserListByPage , SaveSysUser , UpdateSysUser , DeleteSysUserById} from '@/api/sysUser';
 import { ElMessage, ElMessageBox } from 'element-plus'
-import {GetAllRoleList} from '@/api/sysRole'
-///////////////用户分配角色
-// 角色列表
-const userRoleIds = ref([])
-const allRoles = ref([
-    {"id":1 , "roleName":"管理员"},
-    {"id":2 , "roleName":"业务人员"},
-    {"id":3 , "roleName":"商品录入员"},
-])
-const dialogRoleVisible = ref(false)
-const showAssignRole = async row => {
-    sysUser.value = {...row}
-    dialogRoleVisible.value = true
+import { useApp } from '@/pinia/modules/app'
+import { GetAllRoleList } from '@/api/sysRole'; 
+import { DoAssignRoleToUser} from '@/api/sysUser'; 
 
-    //得到所有角色
-    const {data} = await GetAllRoleList(row.id)
-    allRoles.value = data.allRolesList
 
-    //用户分配过的角色
-    userRoleIds.value = data.sysUserRoles
-}
-
-//分配角色
-const doAssign = async ()=>{
-    let assignRoleVo = {
-        userId: sysUser.value.id,
+//////////////用户分配角色
+//角色分配按钮事件处理函数
+const doAssign = async () => {
+    let assginRoleVo = {
+        userId: sysUser.value.id ,
         roleIdList: userRoleIds.value
     }
-    const {code} = await DoAssignRoleToUser(assignRoleVo)
+    const { code , message , data} = await DoAssignRoleToUser(assginRoleVo) ;
     if(code === 200) {
-        ElMessage.success("操作成功")
-        dialogRoleVisible.value = false
+        ElMessage.success('操作成功')
+        dialogRoleVisible.value = false 
         fetchData()
     }
 }
-///////////////上传
-import { useApp } from '@/pinia/modules/app'
 
+// 角色列表
+const userRoleIds = ref([])
+const allRoles = ref([])
+const dialogRoleVisible = ref(false)
+const showAssignRole = async row => {
+  sysUser.value = {...row}
+  dialogRoleVisible.value = true
+  // 查询所有的角色数据
+  const {code , message , data } = await GetAllRoleList(row.id) ;
+  allRoles.value = data.allRolesList
+
+  // 获取当前登录用户的角色数据
+  userRoleIds.value = data.sysUserRoles
+}
+
+//////////////////////上传
 const headers = {
   token: useApp().authorization.token     // 从pinia中获取token，在进行文件上传的时候将token设置到请求头中
 }
@@ -182,26 +181,87 @@ const headers = {
 const handleAvatarSuccess = (response, uploadFile) => {
     sysUser.value.avatar = response.data
 }
+// 表格数据模型
+const list = ref([]);
 
-///////////////用户删除
-const deleteById = (row)=>{
+// 分页条数据模型
+const total = ref(0)
+
+// 定义搜索表单数据模型
+const queryDto = ref({
+    keyword: "" ,
+    createTimeBegin: "",
+    createTimeEnd: ""
+})
+const createTimes = ref([])
+
+//分页数据
+const pageParamsForm = {
+  page: 1, // 页码
+  limit: 10, // 每页记录数
+}
+
+// 修改按钮点击事件处理函数
+const editSysUser = (row) => {
+    dialogVisible.value = true 
+    sysUser.value = {...row}
+}
+
+// 删除角色
+const deleteById = (row) => {
     ElMessageBox.confirm('此操作将永久删除该记录, 是否继续?', 'Warning', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning',
     }).then(async () => {
-       const {code} = await DeleteSysUser(row.id)
+       const {code } = await DeleteSysUserById(row.id)
        if(code === 200) {
-            ElMessage.success("操作成功")
+            ElMessage.success('删除成功')
             fetchData()
        }
     })
 }
+const pageParams = ref(pageParamsForm)
 
-///////////////用户添加 和  修改
+// onMounted钩子函数
+onMounted(() => {
+    fetchData() ;
+})
+
+// 搜素按钮点击事件处理函数
+const searchSysUser = () => {
+    fetchData()
+}
+
+// 重置按钮点击事件处理函数
+const resetData = () => {
+    queryDto.value = {}
+    createTimes.value = []
+    fetchData() // 重新请求数据
+}
+
+// 定义分页查询方法
+const fetchData = async () => {
+    if (createTimes.value.length == 2) {
+        queryDto.value.createTimeBegin = createTimes.value[0]
+        queryDto.value.createTimeEnd = createTimes.value[1]
+    }
+    // 请求后端接口进行分页查询
+    const { code , message , data } = await GetSysUserListByPage(pageParams.value.page , pageParams.value.limit , queryDto.value)
+    list.value = data.list
+    total.value = data.total
+}
+
+
+// 添加表单对话框显示隐藏控制变量
 const dialogVisible = ref(false)
+const addShow = () => {
+    sysUser.value = {}
+    dialogVisible.value = true 
+}
 
-const form = {
+// 定义提交表单数据模型
+const defaultForm = {
     userName:"",
     name: "" ,
     phone: "" ,
@@ -209,87 +269,30 @@ const form = {
     description:"",
     avatar: ""
 }
-const sysUser = ref(form)
+const sysUser = ref(defaultForm)
 
-//点击修改按钮弹出框，数据回显
-const editSysUser = (row)=>{
-    sysUser.value = {...row}
-    dialogVisible.value = true
-}
-
-//点击添加弹出框
-const addShow = ()=>{
-    sysUser.value = {}
-    dialogVisible.value = true
-}
-
-//提交方法
-const submit = async ()=>{
-    if(!sysUser.value.id) {//没有id进行添加操作
-        const {code} = await SaveSysUser(sysUser.value)
+// 提交按钮事件处理函数
+const submit = async () => {
+    if(!sysUser.value.id) {
+        const {code , message , data} = await SaveSysUser(sysUser.value) 
         if(code === 200) {
             dialogVisible.value = false
-            ElMessage.success("操作成功")
+            ElMessage.success('操作成功')
             fetchData()
+        }else {
+            ElMessage.error(message)
         }
-    } else { //修改
-        const {code} = await UpdateSysUser(sysUser.value)
+    }else {
+        const {code , message , data} = await UpdateSysUser(sysUser.value) 
         if(code === 200) {
             dialogVisible.value = false
-            ElMessage.success("操作成功")
+            ElMessage.success('操作成功')
             fetchData()
-        }
-    }
+        }else {
+            ElMessage.error(message)
+        }   
+    }    
 }
-
-///////////////用户列表
-// 表格数据模型
-const list = ref([]);
-
-// 分页条数据模型
-const total = ref(0)
-
-//分页
-const pageParamsForm = {
-    page:1, //当前页
-    limit:3 //每页记录数
-}
-const pageParams = ref(pageParamsForm)
-
-//封装条件数据模型
-const queryDto = ref({
-    keyword:"",
-    createTimeBegin:"",
-    createTimeEnd:""
-})
-
-//开始和结束时间数据模型
-const createTimes = ref([])
-
-//钩子函数
-onMounted(()=>{
-    fetchData()
-})
-
-//条件查询方法 axios调用
-const fetchData = async ()=>{
-    //获取开始和结束时间
-    if(createTimes.value.length == 2) {
-        queryDto.value.createTimeBegin = createTimes.value[0]
-        queryDto.value.createTimeEnd = createTimes.value[1]
-    }
-    const {data} = await GetSysUserListByPage(pageParams.value.page,
-                                pageParams.value.limit,
-                                queryDto.value)
-    list.value = data.list
-    total.value = data.total
-}
-
-//搜索方法
-const searchSysUser = ()=>{
-    fetchData()
-}
-
 </script>
 
 <style scoped>
@@ -320,9 +323,11 @@ const searchSysUser = ()=>{
   overflow: hidden;
   transition: var(--el-transition-duration-fast);
 }
+
 .avatar-uploader .el-upload:hover {
   border-color: var(--el-color-primary);
 }
+
 .el-icon.avatar-uploader-icon {
   font-size: 28px;
   color: #8c939d;

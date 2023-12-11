@@ -1,69 +1,64 @@
 import request from '@/utils/request'
 
-const base_api = '/admin/system/sysRole'
-
-// 角色列表
-export const GetSysRoleListByPage = (current,limit,queryDto) => {
-  return request({
-    // ``模板字符串
-    url: `${base_api}/findByPage/${current}/${limit}`, //路径
-    method: 'post', //提交方式
-    // 接口@RequestBody 前端 data : 名称，以json格式传输
-    // 接口没有注解 ， 前端 params: 名称
-    data: queryDto, //其他参数
-  })
+// 分页查询角色数据
+export const GetSysRoleListByPage = (current , limit , queryDto) => {
+    return request({
+        // url: '/admin/system/sysRole/findByPage/' + pageNum + "/" + pageSize,
+        url: `/admin/system/sysRole/findByPage/${current}/${limit}`,//接口
+        method: 'post',//提交方式
+        //后端接口如果是@RequestBody，需要用data
+        //如果没有注解,前端是params：名称
+        data: queryDto,
+    })
 }
 
-//角色添加
-export const SaveSysRole = (sysRole) =>{
-  return request({
-    // ``模板字符串
-    url: `${base_api}/saveSysRole`, //路径
-    method: 'post', //提交方式
-    data: sysRole, //其他参数
-  })
+// 添加角色请求方法
+export const SaveSysRole = (sysRole) => {
+    return request({
+        url: '/admin/system/sysRole/saveSysRole',
+        method: 'post',
+        data: sysRole ,
+    })
 }
 
-//角色修改
-export const UpdateSysRole = (sysRole) =>{
-  return request({
-    // ``模板字符串
-    url: `${base_api}/updateSysRole`, //路径
-    method: 'put', //提交方式
-    data: sysRole, //其他参数
-  })
+// 保存修改
+export const UpdateSysRole = (data) => {
+    return request({
+        url: '/admin/system/sysRole/updateSysRole',
+        method: 'put',
+        data
+    })
 }
 
-//角色删除
-export const DeleteSysRole = (roleId) =>{
-  return request({
-    // ``模板字符串
-    url: `${base_api}/deleteById/${roleId}`, //路径
-    method: 'delete' //提交方式
-  })
+// 删除角色
+export const DeleteSysRoleById = (roleId) => {
+    return request({
+        url: '/admin/system/sysRole/deleteById/' + roleId,
+        method: 'delete'
+    })
 }
+
 
 // 查询所有的角色数据
 export const GetAllRoleList = (userId) => {
-  return request({
-      url: `/admin/system/sysRole/findAllRoles/${userId}`,
-      method: 'get'
-  })
+    return request({
+        url: '/admin/system/sysRole/findAllRoles/' + userId,
+        method: 'get'
+    })
 }
-
 // 查询指定角色所对应的菜单id
 export const GetSysRoleMenuIds = (roleId) => {
-  return request({
-      url: "/admin/system/sysRoleMenu/findSysRoleMenuByRoleId/"+ roleId,
-      method: 'get'
-  })
+    return request({
+        url: "/admin/system/sysRoleMenu/findSysRoleMenuByRoleId/"+ roleId,
+        method: 'get'
+    })
 }
 
 // 根据角色分配菜单请求方法
 export const DoAssignMenuIdToSysRole = (assignMenuDto) => {
-  return request({
-      url: "/admin/system/sysRoleMenu/doAssign",
-      method: 'post',
-      data: assignMenuDto
-  })
+    return request({
+        url: "/admin/system/sysRoleMenu/doAssign",
+        method: 'post',
+        data: assignMenuDto
+    })
 }

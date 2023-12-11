@@ -20,6 +20,23 @@ export const SaveCategoryBrand = categoryBrand => {
     })
 }
 
+// 修改信息
+export const UpdateCategoryBrandById = categoryBrand => {
+    return request({
+        url: `${api_name}/updateById`,
+        method: 'put',
+        data: categoryBrand,
+    })
+}
+
+// 根据id删除数据
+export const DeleteCategoryBrandById = id => {
+    return request({
+      url: `${api_name}/deleteById/${id}`,
+      method: 'delete',
+    })
+}
+
 // 根据分类的id获取品牌数据
 export const FindBrandByCategoryId = categoryId => {
     return request({

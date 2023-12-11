@@ -21,7 +21,7 @@ export const SaveMenu = sysMenu => {
 // 修改信息
 export const UpdateSysMenuById = sysMenu => {
     return request({
-        url: `${api_name}/update`,
+        url: `${api_name}/updateById`,
         method: 'put',
         data: sysMenu,
     })

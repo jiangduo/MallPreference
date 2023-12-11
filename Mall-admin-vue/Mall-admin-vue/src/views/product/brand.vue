@@ -4,28 +4,29 @@
     </div>
 
     <el-dialog v-model="dialogVisible" title="添加或修改" width="30%">
-        <el-form label-width="120px">
-            <el-form-item label="品牌名称">
-                <el-input v-model="brand.name"/>
-            </el-form-item>
-            <el-form-item label="品牌图标">
-                <el-upload
-                        class="avatar-uploader"
-                        action="http://localhost:8501/admin/system/fileUpload"
-                        :show-file-list="false"
-                        :on-success="handleAvatarSuccess"
-                        :headers="headers"
-                        >
-                    <img v-if="brand.logo" :src="brand.logo" class="avatar" />
-                    <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
-                </el-upload>
-            </el-form-item>
-            <el-form-item>
-                <el-button type="primary" @click="saveOrUpdate">提交</el-button>
-                <el-button @click="dialogVisible = false">取消</el-button>
-            </el-form-item>
-        </el-form>
+    <el-form label-width="120px">
+        <el-form-item label="品牌名称">
+            <el-input v-model="brand.name"/>
+        </el-form-item>
+        <el-form-item label="品牌图标">
+            <el-upload
+                       class="avatar-uploader"
+                       action="http://localhost:8501/admin/system/fileUpload"
+                       :show-file-list="false"
+                       :on-success="handleAvatarSuccess"
+                       :headers="headers"
+                       >
+                <img v-if="brand.logo" :src="brand.logo" class="avatar" />
+                <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
+            </el-upload>
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" @click="saveOrUpdate">提交</el-button>
+            <el-button @click="dialogVisible = false">取消</el-button>
+        </el-form-item>
+    </el-form>
     </el-dialog>
+
 
     <el-table :data="list" style="width: 100%">
         <el-table-column prop="name" label="品牌名称" />
@@ -33,11 +34,11 @@
             <img :src="scope.row.logo" width="50" />
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" />
-        <el-table-column label="操作" align="center" width="200" >
-            <el-button type="primary" size="small">
+        <el-table-column label="操作" align="center" width="200" #default="scope">
+            <el-button type="primary" size="small" @click="editShow(scope.row)">
                 修改
             </el-button>
-            <el-button type="danger" size="small">
+            <el-button type="danger" size="small" @click="remove(scope.row.id)">
                 删除
             </el-button>
         </el-table-column>
@@ -57,10 +58,50 @@
 
 <script setup>
 import { ref , onMounted } from 'vue'
-import { GetBrandPageList , SaveBrand } from '@/api/brand.js'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useApp } from '@/pinia/modules/app'
-///////////////////////////////添加
+import { GetBrandPageList , SaveBrand , UpdateBrandById , DeleteBrandById} from '@/api/brand.js'
+
+////////////////////////////////////删除
+const remove = async id => {
+  ElMessageBox.confirm('此操作将永久删除该记录, 是否继续?', 'Warning', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+    .then(async () => {
+      await DeleteBrandById(id)
+      ElMessage.success('删除成功')
+      fetchData()
+    })
+}
+///////////////////////////////////////////修改
+//进入修改
+const editShow = row => {
+  brand.value = {...row}
+  
+  dialogVisible.value = true
+}
+
+// 保存数据
+const saveOrUpdate = () => {
+  if (!brand.value.id) {
+    saveData()
+  } else {
+    updateData() 
+  }
+}
+
+// 修改
+const updateData = async () => {
+    await UpdateBrandById(brand.value)
+    dialogVisible.value = false
+    ElMessage.success('操作成功')
+    fetchData()
+}
+
+/////////////////////////////////////添加
+    
 const headers = {
   // 从pinia中获取token，在进行文件上传的时候将token设置到请求头中
   token: useApp().authorization.token     
@@ -85,13 +126,6 @@ const handleAvatarSuccess = (response) => {
   brand.value.logo = response.data
 }
 
-// 保存数据
-const saveOrUpdate = () => {
-  if (!brand.value.id) {
-    saveData()
-  } 
-}
-
 // 新增
 const saveData = async () => {
   await SaveBrand(brand.value)
@@ -99,7 +133,9 @@ const saveData = async () => {
   ElMessage.success('操作成功')
   fetchData()
 }
-///////////////////////////////
+
+
+////////////////////////////分页
 // 定义表格数据模型
 const list = ref([])
 
